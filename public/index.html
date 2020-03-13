@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--link leeflet-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin="" />
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+    <!-- import p5.js -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
+
+    <title>selfie app</title>
+</head>
+
+<body>
+    <h1>空气质量</h1>
+    <p>
+        <span>latitude:&nbsp&nbsp&nbsp&nbsp<span id="lat"></span></span><br>
+        <span>longitude:&nbsp&nbsp&nbsp&nbsp<span id="lon"></span></span><br>
+        <p id="weather"></p>
+    </p>
+    <button type="button" id="getData">checkin</button>
+
+    <!--Map style info-->
+    <!-- <style>
+        #myLocationMap {
+            height: 800px;
+        }
+    </style> -->
+
+    <script>
+        function setup() {
+            let latitude;
+            let longitude;
+            let dataBtn = document.getElementById('getData');
+            noCanvas();
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async position => {
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+                    console.log('lat:' + latitude);
+                    console.log('lon:' + longitude);
+                    document.getElementById('lat').innerText = latitude.toFixed(2);
+                    document.getElementById('lon').innerText = longitude.toFixed(2);
+                    const api_url = `/weather/${latitude},${longitude}`;
+                    console.log(api_url);
+                    const weatherInfo = await fetch(api_url);
+                    console.log(weatherInfo);
+                    const json = await weatherInfo.json();
+                    console.log(json);
+                    let ar_data = json.aqData.results[0].measurements[0];
+                    document.getElementById('weather').innerText = `city:${json.weatherData.timezone}
+                    current weather is ${json.weatherData.currently.summary}
+                    pm2.5:
+                    ${ar_data.parameter}:${ar_data.value}${ar_data.unit}
+                    last updated:${ar_data.lastUpdated}`;
+                });
+            } else {
+                console.log('location not availible')
+            }
+
+            dataBtn.addEventListener('click', async event => {
+                const data = { latitude, longitude }
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                }
+                const response = await fetch('api', options);
+                const resData = await response.json();
+                console.log(resData);
+            })
+        }
+    </script>
+</body>
+
+</html>
